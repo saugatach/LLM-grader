@@ -33,10 +33,10 @@ Current load: While the exact pass rate was not given, if 100% of all testers pa
 
 # Administrative Process
 ![certadmin](../img/certadmin.png)
-On a regular basis, architects need to analyze questions and make updates to continuously improve the quality of the tests as well as modernizing the questions to keep up with the latest trends.
 
+On a regular basis, architects need to analyze questions and make updates to continuously improve the quality of the tests as well as modernizing the questions to keep up with the latest trends.
 
 # Certification Results
 ![certadmin](../img/certresults.png)
 
-
+Certification info should be provided in a database. This use case provides no load on the software architects who have to absorb the majority of the manual load at risk as the demand scales.
