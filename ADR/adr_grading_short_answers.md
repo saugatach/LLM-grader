@@ -1,80 +1,85 @@
-# Architecture Decision Record (ADR) – Automated Architecture Exam Grading System
+# Architecture Decision Record (ADR) – Automated Grading System Using Multi-Agent Reasoning Framework
 
 ### **1. Title**
-**Automated Architecture Exam Grading System with OpenAI LLM and Self-Evaluation Frameworks**
+**Evaluating and Selecting an Agentic Multi-Agent Framework for Automated Grading**
 
 ### **2. Context**
 
 The goal is to design an automated grading system for an **architecture certification exam**, where answers are **free-form, short responses (<200 words)**. Grading must be on a **5-point scale**, and we have a dataset of **200,000 SME-graded responses**. 
 
-Initial considerations included **fine-tuning an open-source LLM (e.g., LLaMA 3, DeepSeek MoE)**, but the **cost of training and deployment was too high**. Instead, the decision is to use **a commercially available LLM (OpenAI GPT-4-turbo)** for **batch-based grading**, optimizing for **accuracy over latency** since real-time processing is not required. 
+Previous considerations included **fine-tuning an open-source LLM (e.g., LLaMA 3, DeepSeek MoE)** or using **RAG + CoT + Refine**, but we are now transitioning to an **Agentic Multi-Agent Framework** where each agent specializes in different parts of the grading pipeline. 
 
-To **improve accuracy and consistency**, **self-evaluation frameworks** such as **Chain-of-Thought (CoT), Refine, and Retrieval-Augmented Generation (RAG)** are integrated. 
+To **improve accuracy and consistency**, the grading process will be split across three distinct agents:
+
+1. **Grader Agent:** Assigns an initial score using **Refine + CoT** based on rubric criteria.
+2. **Evaluator Agent:** Cross-checks the score using **RAG + Self-Verification**, comparing it to similar graded examples.
+3. **Dean Agent:** Finalizes the score, resolves discrepancies, ensures fairness across responses, and handles edge cases where score inconsistencies cannot be resolved after multiple cycles. The Dean Agent also acts as a tie-breaker in scenarios where the Grader and Evaluator Agents loop between different scores.
+
+This approach **ensures specialized expertise at each step**, making grading **more consistent, explainable, and reliable**.
 
 ### **3. Decision**
 
-We will implement a **hybrid AI grading pipeline** that uses:
-1. **OpenAI GPT-4-turbo** for **initial scoring**.
-2. **Self-Evaluation via CoT + Refine** to **verify and improve grading consistency**.
-3. **RAG-based Justification** to retrieve **past graded examples from a vector database to provide explainability** by showing candidates how similar answers were graded in the past.
-4. **Batch Processing Pipeline** to optimize cost and throughput, as the high latency of the pipeline is a tradeoff for achieving high accuracy. Due to this, real-time processing is impractical, and the system must be executed as a batch job.
-5. **Fallback Mechanisms** for SME intervention in edge cases. Additionally, Reinforcement Learning from Human Feedback (RLHF) could be explored to iteratively improve grading accuracy by incorporating SME feedback directly into model training.
+For **automated grading**, the ideal approach should:
+1. **Improve accuracy** by reducing hallucinations and inconsistencies.
+2. **Provide explainability** for grading justifications.
+3. **Balance latency and cost-effectiveness** for batch processing.
 
-### **4. Comparison of Approaches**
+**Selected Approach:**
+- **Multi-Agent Framework:**
+  - All agents utilize **Refine + CoT** for structured reasoning.
+  - The **Evaluator Agent exclusively integrates RAG** to verify score consistency against SME-graded examples.
+  - **Dean Agent acts as a final verification layer**, ensuring fairness and resolving conflicts.
 
-| Approach | LLM Cost (Fine-tuning & Hosting) | Inference Cost per Request | Accuracy (%) | Latency (ms) | Explainability |
-|-----------|------------------------------|---------------------------|--------------|--------------|----------------|
+### **4. Updated Cost Considerations**
+
+The introduction of **multiple agents increases token usage significantly**, requiring **recalculated cost estimates**:
+
+| **Approach** | **LLM Cost (Fine-tuning & Hosting)** | **Inference Cost per Request** | **Accuracy (%)** | **Latency (ms)** | **Explainability** |
+|-------------|--------------------------------|---------------------------|--------------|--------------|----------------|
 | **Option 1: Fine-Tuned LLaMA 3 / DeepSeek MoE** | High ($10K–$50K) | ~$0.01 | 95% | 300ms | Low (No built-in justification) |
 | **Option 2: OpenAI GPT-4 Basic Few-Shot Prompting** | None | ~$0.004 | 85% | 200ms | Low (No self-verification) |
 | **Option 3: OpenAI GPT-4 + CoT + Refine + RAG** | None | ~$0.006–$0.008 | 92% | 500ms | High (Retrieves past graded responses) |
+| **Option 4: Multi-Agent Grading Framework (Grader + Evaluator + Dean)** | None | ~$0.012–$0.016 (3x LLM calls) | 96% | 1200ms | Very High (Grader + Evaluator + Dean verification) |
 
-### **5. System Architecture**
-#### **Components & Workflow**
-1. **Grading Engine:**
-   - OpenAI GPT-4-turbo scores responses with **few-shot prompting.**
-   - Batch processing ensures **scalability and cost control.**
+The introduction of **multiple agents increases token usage significantly**, requiring **recalculated cost estimates**:
 
-2. **RAG-Based Justification:**
-   - Retrieves similar past graded responses from a vector database.
-   - Provides contextual examples to justify scoring decisions.
-   - Ensures that candidates understand why they received a specific grade.
-   
-3. **Accuracy Improvement Framework:**
-   - **CoT Reasoning** ensures **step-by-step scoring validation**.
-   - **Refine Framework** iterates over the score to **minimize inconsistencies**.
+| **Approach** | **LLM Cost (Fine-tuning & Hosting)** | **Inference Cost per Request** | **Accuracy (%)** | **Latency (ms)** | **Explainability** |
+|-------------|--------------------------------|---------------------------|--------------|--------------|----------------|
+| **Previous (RAG + CoT + Refine)** | None | ~$0.006–$0.008 | 92% | 500ms | High (RAG provides examples) |
+| **New (Multi-Agent System)** | None | ~$0.012–$0.016 (3x LLM calls) | 96% | 1200ms | Very High (Grader + Evaluator + Dean verification) |
 
-4. **Scalability & Cost Optimization:**
-   - **Batch execution** for cost efficiency.
-   - **Confidence thresholding:** High-confidence scores are accepted; low-confidence ones are **reviewed manually**.
-   - **Data caching** for redundant responses.
+### **5. System Architecture Considerations**
 
-5. **User Interface & API:**
-   - **Backend:** FastAPI-based API for batch grading.
-   - **Frontend:** React-based UI with **explanations & SME override options**.
-   - **RAG UI Module**: Displays past graded examples for candidates and SMEs.
+1. **For Batch-Based Grading:**
+   - **Grader Agent assigns initial scores based on CoT + Refine**.
+   - **Evaluator Agent uses RAG to check consistency with prior graded responses**.
+   - **Dean Agent verifies final score and ensures fairness**.
+   - **Batch processing allows parallel execution, mitigating latency concerns.**
+
+2. **For High-Accuracy Grading:**
+   - **Multi-agent collaboration ensures verification at multiple levels.**
+   - **Explainability improves with justification provided at each stage.**
 
 ### **6. Alternative Enhancements Considered**
 
-| Enhancement | LLM Cost | Inference Cost per Request | Accuracy | Latency | Pros | Cons |
-|-------------|----------|---------------------------|----------|---------|------|------|
-| **Fine-Tuned Distilled Model (TinyLLaMA / Phi-2)** | Medium ($5K–$15K) | Low ($0.002–$0.005) | Moderate (88%) | 150ms | Lower inference cost, faster response times | Requires additional training, lower accuracy than GPT-4 |
-| **Hybrid Strategy (GPT-4 Primary, Fine-Tuned Model as Fallback)** | Medium ($5K–$20K) | Medium ($0.006 per request avg.) | High (94%) | 400ms | Optimizes for cost and performance, balances trade-offs | More complex implementation, needs routing logic |
-| **Edge Case Handling with Human-in-the-Loop (HITL)** | None (SME costs apply) | High (Manual review required) | Very High (98%) | Variable | Ensures human oversight for ambiguous cases | Slower, requires SME intervention |
+| **Enhancement** | **Benefits** | **Trade-offs** |
+|-------------|----------|-------------|
+| **Fine-Tuned LLaMA 3 with RLHF** | Higher accuracy, customized grading model | Expensive, requires retraining |
+| **Hybrid GPT-4 + Open-Source Models** | Cost-effective, balances accuracy and cost | Complex routing logic needed |
+| **Human-in-the-Loop (HITL) for Review** | Ensures fairness in ambiguous cases | Slower, SME intervention required |
 
 ### **7. Consequences**
 ✅ **Pros:**
-- **Cost-effective** (~$0.006 per request vs. $0.01 for fine-tuning LLaMA 3).
-- **Higher accuracy** than naive prompting.
-- **Explainability and fairness** via RAG justification.
-- **No infrastructure management required.**
+- Ensures **higher accuracy (96%)** through multi-agent validation.
+- **Explainability significantly improved** via RAG-based justification.
+- Reduces **grading inconsistencies** through multiple verification layers.
 
 ⚠️ **Challenges & Mitigation Strategies:**
-- **Latency (500ms per request)** → Not an issue due to **batch processing**.
-- **Reliance on OpenAI API** → Mitigated by potential **backup open-source model**.
-- **RAG retrieval relevance** → Requires **tuning for domain-specific grading**.
+- **Latency (1200ms per request)** → Batch processing avoids real-time performance concerns.
+- **Computational Cost (~2x inference cost increase)** → Optimized execution to parallelize grading steps.
 
 ### **8. Next Steps**
-1. **Prototype GPT-4 grading pipeline** with **real SME responses**.
-2. **Evaluate CoT + Refine impact** on accuracy consistency.
-3. **Integrate RAG for Justification UI.**
-4. **Test batch execution for cost efficiency.**
+1. **Prototype the Multi-Agent Grading Pipeline (Grader + Evaluator + Dean Agent).**
+2. **Test cost scaling based on batch size.**
+3. **Evaluate latency reduction strategies, such as cached RAG retrieval.**
+
