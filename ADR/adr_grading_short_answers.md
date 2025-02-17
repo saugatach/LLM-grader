@@ -78,8 +78,6 @@ The introduction of multiple agents increases token usage significantly, requiri
 - **Correction Mechanism:** Evaluator nudges the Grader in low-variance cases (3-5 scores) while maintaining fairness in high-variance cases (1-5 scores).
 
 ### 9. Conclusion
-For the hackathon, the **Multi-Agent Grading Framework with RAG and Refinement** was selected due to its modularity, high accuracy, and fairness in handling grading variance. The Evaluator acts as an independent correction mechanism, while the Dean ensures final arbitration. Future improvements could involve **adaptive retrieval, confidence-weighted scoring, or hierarchical review layers** to further refine accuracy and efficiency.
+The **Multi-Agent Grading Framework with RAG and Refinement** was selected due to its modularity, high accuracy, and fairness in handling grading variance. The Evaluator acts as an independent correction mechanism, while the Dean ensures final arbitration. Future improvements could involve **adaptive retrieval, confidence-weighted scoring, or hierarchical review layers** to further refine accuracy and efficiency.
 
-### 10. Architecture Diagram
-_(Insert diagram here, illustrating the Grader, Evaluator, and Dean agents, including their interactions and data flow)_
 
