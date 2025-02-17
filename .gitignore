@@ -12,6 +12,8 @@ __pycahe__/
 # IDEA IntelliJ files
 *.xml
 .idea/
+.idea/**
+.idea
 .ipynb_checkpoints/
 
 .python-version
