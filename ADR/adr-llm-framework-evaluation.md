@@ -1,13 +1,13 @@
-**Architecture Decision Record (ADR) – Reasoning Enhancement Frameworks for LLMs**
+# Architecture Decision Record (ADR) – Reasoning Enhancement Frameworks for LLMs
 
-### **1. Title**
+### 1. Title
 
-**Evaluating and Selecting Reasoning Enhancement Frameworks for Automated Grading and General AI Tasks**
+Evaluating and Selecting Reasoning Enhancement Frameworks for Automated Grading and General AI Tasks
 
-### **2. Context**
+### 2. Context
 
-To improve reasoning accuracy, explainability, and decision-making in **automated grading and other AI-driven
-applications**, various frameworks have emerged. These frameworks **enhance LLM outputs** by refining, verifying, or
+To improve reasoning accuracy, explainability, and decision-making in automated grading and other AI-driven
+applications, various frameworks have emerged. These frameworks enhance LLM outputs by refining, verifying, or
 retrieving relevant information before finalizing responses. This ADR evaluates the most commonly used
 reasoning-enhancement frameworks:
 
@@ -20,7 +20,7 @@ reasoning-enhancement frameworks:
 7. **CoT + Refine + RAG** – Enhances structured reasoning while integrating retrieval-based verification.
 8. **Agentic Frameworks (AutoGPT/BabyAGI, LangChain Agents)** – Multi-step adaptive AI reasoning.
 
-### **3. Comparison of Reasoning Frameworks**
+### 3. Comparison of Reasoning Frameworks
 
 | Framework                         | Purpose                                                                       | How It Works                                                                                                   | Best Use Cases                                                                | Limitations                                                           |
 |-----------------------------------|-------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------|-----------------------------------------------------------------------|
@@ -33,7 +33,7 @@ reasoning-enhancement frameworks:
 | **CoT + Refine + RAG**            | Enhances structured reasoning while integrating retrieval-based verification  | Leverages past graded responses to improve consistency                                                         | High-accuracy automated grading, AI-driven evaluation                         | Limited in handling edge cases with high grading variance             |
 | **Multi-Agent Grading Framework** | Uses multiple specialized agents for grading, validation, and decision-making | One agent grades, another verifies, and a dean agent ensures fairness and final approval                       | High-stakes grading, multi-step AI workflows, regulatory decision-making      | High latency, complex orchestration, increased computational cost     |
 
-### **4. Decision**
+### 4. Decision
 
 We considered two primary approaches:
 
@@ -41,7 +41,7 @@ We considered two primary approaches:
   achieving **92% accuracy at 500ms latency**. While effective in improving consistency, it struggles with extreme
   variance in grading data and lacks a robust fairness mechanism.
 - **Multi-Agent Grading Framework (#8)** – This approach introduces specialized agents (Grader, Evaluator, and Dean) to
-  refine scores through multiple validation layers. It achieves **96% accuracy** at the cost of increased inference
+  refine scores through multiple validation layers. It achieves 96% accuracy at the cost of increased inference
   time (1200ms per request). By isolating decision-making processes, it prevents bias accumulation and ensures fairness
   in grading.
 
@@ -49,7 +49,7 @@ There was significant debate regarding whether these approaches are fundamentall
 abstractions of structured reasoning. Both rely on iterative refinement and retrieval augmentation, but the multi-agent
 framework introduces role-based separation to enforce unbiased validation and adjudication.
 
-### **5. Selection and Justification**
+### 5. Selection and Justification
 
 After evaluating multiple reasoning enhancement frameworks, we faced a decision between two closely related but distinct
 approaches: CoT + Refine + RAG (#7) and the Multi-Agent Grading Framework (#8). Both leverage structured reasoning and
@@ -73,9 +73,9 @@ Given the trade-offs, we selected the Multi-Agent Grading Framework (#8) for aut
 accuracy, structured fairness mechanisms, and superior scalability for future enhancements. While CoT + Refine + RAG
 remains a viable alternative, its limitations in handling extreme variance made it less suitable for our use case.
 
-### **6. Multi-Agent Grading Framework Consideration**
+### 6. Multi-Agent Grading Framework Consideration
 
-#### **Agent Roles and Functions**
+#### Agent Roles and Functions
 
 | **Agent**           | **Function**                                                                     |
 |---------------------|----------------------------------------------------------------------------------|
@@ -83,27 +83,23 @@ remains a viable alternative, its limitations in handling extreme variance made 
 | **Evaluator Agent** | Cross-checks the score against SME-graded examples (**RAG + Self-Verification**) |
 | **Dean Agent**      | Resolves conflicts, applies final refinements, and ensures fairness              |
 
-#### **Benefits of Multi-Agent Grading Framework:**
+#### Benefits of Multi-Agent Grading Framework:
 
-- **Higher accuracy** due to specialized agents focusing on different aspects of grading.
-- **Better consistency** by separating scoring from evaluation.
-- **Improved fairness** by ensuring that grading variance is considered across multiple SME data points.
+- Higher accuracy due to specialized agents focusing on different aspects of grading.
+- Better consistency by separating scoring from evaluation.
+- Improved fairness by ensuring that grading variance is considered across multiple SME data points.
 
-### **7. Bias & Variance Considerations**
+### 7. Bias & Variance Considerations
 
 - **Bias Risk:** If the Grader sees past scores via RAG, it might drift toward an incorrect average score.
 - **Variance Awareness:** The Evaluator and Dean ensure that the Grader’s score aligns with acceptable variance levels.
-- **Correction Mechanism:** Evaluator nudges the Grader in **low-variance cases (3-5 scores)** while maintaining
-  fairness in **high-variance cases (1-5 scores).**
+- **Correction Mechanism:** Evaluator nudges the Grader in low-variance cases (3-5 scores) while maintaining
+  fairness in high-variance cases (1-5 scores).
 
-### **8. Conclusion**
+### 8. Conclusion
 
-For the hackathon, the **Multi-Agent Grading Framework with RAG and Refinement** was selected due to its modularity,
+The **Multi-Agent Grading Framework with RAG and Refinement** was selected due to its modularity,
 high accuracy, and fairness in handling grading variance. The Evaluator acts as an independent correction mechanism,
-while the Dean ensures final arbitration. Future improvements could involve **adaptive retrieval, confidence-weighted
-scoring, or hierarchical review layers** to further refine accuracy and efficiency.
-
-### **9. Architecture Diagram**
-
-_(Insert diagram here, illustrating the Grader, Evaluator, and Dean agents, including their interactions and data flow)_
+while the Dean ensures final arbitration. Future improvements could involve adaptive retrieval, confidence-weighted
+scoring, or hierarchical review layers to further refine accuracy and efficiency.
 

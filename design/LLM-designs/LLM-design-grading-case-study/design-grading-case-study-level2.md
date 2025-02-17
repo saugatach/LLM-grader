@@ -84,6 +84,52 @@ sequenceDiagram
 ---
 
 ## **6. High Availability & Fault Tolerance**
+
+```mermaid
+graph TD;
+    A[Case Study Submission] -->|Text| B[Text Grader]
+    A -->|References| C[Reference Checker]
+    A -->|Diagrams| D[Diagram Evaluator]
+    B --> E[Final Aggregator]
+    C --> E
+    D --> E
+    E -->|Final Score| F[Grading Report]
+    E -->|Failover Trigger| G[Redundant Processing Pipeline]
+    G -->|Reprocess| E
+    D -->|Low Confidence| H[LLaVA-generated Descriptions]
+    H -->|Extracted Text| D
+    H -->|Very Low Confidence| I[OCR-based Parsing]
+    I -->|Generated Text| D
+    I -->|Complete Failure| J[Human-in-the-loop Escalation]
+```
+
+### **6.1 Resilience Mechanisms**
+- **Failover Strategies:** Redundant processing pipelines ensure grading continuity.
+- **Fallbacks for Diagram Processing:**
+  - **High confidence** → Normal multimodal processing.
+  - **Low confidence** → LLaVA-generated textual descriptions.
+  - **Very low confidence** → OCR-based parsing.
+  - **Complete failure** → Human-in-the-loop escalation.
+
+## **7. Security & Compliance**
+
+```mermaid
+graph TD;
+    A[User Authentication] -->|Login Request| B[OAuth 2.0 Authenticator]
+    B -->|Validated Token| C[Role-Based Access Control]
+    C -->|Access Granted| D[Grading System]
+    D -->|Process Request| E[Audit Logging System]
+    E -->|Store Logs| F[Compliance Storage]
+    F -->|Review Logs| G[Security Monitoring System]
+```
+
+### **7.1 Authentication & Authorization**
+- **OAuth 2.0 for API authentication**
+- **Role-based access control (RBAC) for data security**
+
+### **7.2 Compliance Considerations**
+- **Data privacy standards** (GDPR, CCPA) enforced via access policies.
+- **Audit logs** maintained for grading transparency.
 ### **6.1 Error Handling & Fallbacks**
 - **Text Processing Failures:** Retry mechanism with fallback to simplified parsing.
 - **Diagram Recognition Failures:**

@@ -1,83 +1,124 @@
-## Architecture Decision Record (ADR) – Automated Grading System Using Multi-Agent Reasoning Framework
+# Architecture Decision Record (ADR) – Automated Grading System for Case Studies with Multimodal Processing
 
-### 1. Title
-**Evaluating and Selecting an Agentic Multi-Agent Framework for Automated Grading**
+### **1. Title**
+**Agentic Multi-Agent Grading System for Case Studies with Image Verification Using GPT-4V and Human-in-the-Loop Fallback**
 
-### 2. Context
+---
 
-The goal is to design an automated grading system for an **architecture certification exam**, where answers are **free-form, short responses (<200 words)**. Grading must be on a **5-point scale**, and we have a dataset of **200,000 SME-graded responses**. 
+### **2. Context**
+The **grading framework for architecture case studies** follows the **same LLM orchestration approach as the short-answer grading system** (see ADR for **short-answer grading**). 
 
-Previous considerations included **fine-tuning an open-source LLM (e.g., LLaMA 3, DeepSeek MoE)** or using **RAG + CoT + Refine**, but we are now transitioning to an **Agentic Multi-Agent Framework** where each agent specializes in different parts of the grading pipeline. 
+- Both systems **use a multi-agent framework** for structured evaluation.
+- Both rely on **Chain-of-Thought (CoT) + Refine** for reasoning and consistency.
+- Both use an **agentic approach** to ensure explainability and grading fairness.
 
-To **improve accuracy and consistency**, the grading process will be split across three distinct agents:
+However, **case studies contain architecture diagrams**, requiring **multimodal processing**. Unlike short-answer grading (which only evaluates text), **this system must process both text and images**. Therefore, we use **GPT-4V**, which supports both **text and vision**, while the **short-answer grading system does not require multimodal calls**.
 
-1. **Grader Agent:** Assigns an initial score using **Refine + CoT** based on rubric criteria.
-2. **Evaluator Agent:** Cross-checks the score using **RAG + Self-Verification**, comparing it to similar graded examples.
-3. **Dean Agent:** Finalizes the score, resolves discrepancies, ensures fairness across responses, and handles edge cases where score inconsistencies cannot be resolved after multiple cycles. The Dean Agent also acts as a tie-breaker in scenarios where the Grader and Evaluator Agents loop between different scores.
+### **Key Grading Dimensions**
+1. **Structured Text Evaluation** – Assessing different sections (problem statement, methodology, conclusions, etc.) while maintaining overall coherence.
+2. **Reference Verification** – Checking if references are correctly cited, relevant, and substantiate the case study.
+3. **Architecture Diagram Processing** – Understanding and validating visual components to ensure alignment with the textual explanation.
+4. **Handling Long Contexts** – Managing context length limitations by implementing chunking and retrieval-based summarization.
 
-This approach **ensures specialized expertise at each step**, making grading **more consistent, explainable, and reliable**.
+---
 
-### 3. Decision
+### **3. Decision**
+For automated case study grading, we apply the **same multi-agent grading framework** as the short-answer grading system, but with **GPT-4V for multimodal processing**. Additionally, we introduce **an image verification step** to ensure all diagrams are evaluated correctly.
 
-For automated grading, the ideal approach should:
-1. Improve accuracy by reducing hallucinations and inconsistencies. Large language models rely on limited context windows, meaning they may not always retrieve all relevant training examples when scoring a response. If a grader sees only a small subset of past scores instead of the full range, it may begin assigning grades based on incomplete information, leading to inconsistencies over time.
-2. Provide explainability for grading justifications. When a response is graded, it should be possible to trace back how the score was determined. A system that relies purely on retrieval or implicit reasoning may fail to provide meaningful feedback. A well-structured approach should ensure that each step in the grading process can be understood and reviewed.
-3. Balance latency and cost-effectiveness for batch processing. Automated grading often requires evaluating large volumes of responses. An approach that is too computationally expensive or slow will not scale efficiently, making it impractical for real-world applications. The selected framework should ensure that grading remains both cost-effective and performant, especially when deployed at scale.
+1. **Use GPT-4V for Text + Image Processing**  
+   - The **full case study (text + diagrams) is processed together** in **GPT-4V** to maintain context.
+   - **Short-answer grading does not require multimodal processing**, so it uses a standard GPT-4 model without vision capabilities.
+   
+2. **Verify Image Processing with a Dedicated Validation Step**  
+   - After full-document processing, **each image is extracted separately and reprocessed in GPT-4V**.
+   - This **ensures no diagram was skipped** in the initial pass.
+   - If **any image is missing**, **HITL fallback is triggered**.
 
-**Selected Approach:**
-- **Multi-Agent Framework:**
-  - All agents utilize **Refine + CoT** for structured reasoning.
-  - The **Evaluator Agent exclusively integrates RAG** to verify score consistency against SME-graded examples.
-  - **Dean Agent acts as a final verification layer**, ensuring fairness and resolving conflicts.
+3. **Ensure Explainability and Accuracy via the Multi-Agent Approach**  
+   - The same **Grader, Evaluator, and Dean Agents** from the short-answer system are used.
+   - The only additional step is the **image verification loop**.
 
-### 4. Updated Cost Considerations
+---
 
-The introduction of multiple agents increases token usage significantly, requiring recalculated cost estimates:
+### **4. Selected Approach**
+#### **Multi-Agent Framework with Image Verification**
+- **Retains the Multi-Agent Architecture from Short-Answer Grading:**  
+  - **Grader Agent** – Evaluates textual sections using **CoT + Refine**.
+  - **Evaluator Agent** – Uses **Retrieval-Augmented Grading (RAG)** to verify score consistency.
+  - **Dean Agent** – Applies **final normalization and fairness adjustments**.
+- **Adds a Dedicated Image Verification Step:**  
+  - Extracts all images separately from the document.
+  - Reprocesses them **individually** in **GPT-4V** to verify they were analyzed.
+  - **If any image is missing from the full document processing, escalate to HITL.**
 
-| **Approach** | **LLM Cost (Fine-tuning & Hosting)** | **Inference Cost per Request** | **Accuracy (%)** | **Latency (ms)** | **Explainability** |
-|-------------|--------------------------------|---------------------------|--------------|--------------|----------------|
-| **Option 1: Fine-Tuned LLaMA 3 / DeepSeek MoE** | High ($10K–$50K) | ~$0.01 | 95% | 300ms | Low (No built-in justification) |
-| **Option 2: OpenAI GPT-4 Basic Few-Shot Prompting** | None | ~$0.004 | 85% | 200ms | Low (No self-verification) |
-| **Option 3: OpenAI GPT-4 + CoT + Refine + RAG** | None | ~$0.006–$0.008 | 92% | 500ms | High (Retrieves past graded responses) |
-| **Option 4: Multi-Agent Grading Framework (Grader + Evaluator + Dean)** | None | ~$0.012–$0.016 (3x LLM calls) | 96% | 1200ms | Very High (Grader + Evaluator + Dean verification) |
+---
 
-### 5. System Architecture Considerations
+### **5. Updated Cost Considerations**
+Since we now use **GPT-4V for both full-document processing and image verification**, cost considerations have changed:
 
-1. **For Batch-Based Grading:**
-   - **Grader Agent assigns initial scores based on CoT + Refine**.
-   - **Evaluator Agent uses RAG to check consistency with prior graded responses**.
-   - **Dean Agent verifies final score and ensures fairness**.
-   - **Batch processing allows parallel execution, mitigating latency concerns.**
+| **Approach** | **LLM Cost (Hosting)** | **Inference Cost per Request** | **Accuracy (%)** | **Latency (ms)** | **Explainability** |
+|-------------|-------------------------|-------------------------------|------------------|------------------|--------------------|
+| **GPT-4V with Image Verification (Selected)** | None | ~$0.018 (text + images) | **97%** | ~1500ms | **Very High** |
+| **GPT-4V Without Image Verification** | None | ~$0.015 | **92%** | ~1200ms | Medium – Some diagrams may be missed |
 
-2. **For High-Accuracy Grading:**
-   - **Multi-agent collaboration ensures verification at multiple levels.**
-   - **Explainability improves with justification provided at each stage.**
+While adding image verification **increases cost**, it significantly improves **accuracy and fairness** by ensuring that **no diagram is skipped or misinterpreted**.
 
-### 6. Alternative Enhancements Considered
+---
 
+### **6. Image Processing Verification & Fallback Mechanism**
+Since GPT-4V processes text and images together, there is a risk that **some diagrams may be skipped** during inference. To prevent this:
+1. **Primary Image Evaluation:**  
+   - The full document (text + images) is **processed first** through **GPT-4V**.
+2. **Verification Step:**  
+   - Extract **all images** separately from the document.
+   - Reprocess each image **individually** in **GPT-4V**.
+   - Compare the detected images from the **full-document evaluation** with the **individually processed images**.
+3. **Fallback Escalation:**  
+   - If **all images are successfully processed**, grading proceeds normally.
+   - If **any image is missing**, **HITL review is triggered** to ensure **no critical diagram was ignored**.
+
+---
+
+### **7. System Architecture Considerations**
+1. **Agent-Based Grading System (Same as Short-Answer Grading ADR)**  
+   - **Grader Agent:** Assigns initial scores using **CoT + Refine**.
+   - **Evaluator Agent:** Uses **RAG to check score consistency**.
+   - **Dean Agent:** Ensures fairness, applies normalization, and finalizes grading.
+   - **Diagram Evaluator:** Extracts diagrams and verifies **whether all images were processed** in GPT-4V.
+
+2. **Batch-Based Grading for Scalability**
+   - **Parallel Execution** – Multiple responses can be processed concurrently.
+   - **Confidence Thresholding** – If any response has anomalies, it is automatically **flagged for HITL review**.
+
+---
+
+### **8. Alternative Enhancements Considered**
 | **Enhancement** | **Benefits** | **Trade-offs** |
-|-------------|----------|-------------|
-| **Fine-Tuned LLaMA 3 with RLHF** | Higher accuracy, customized grading model | Expensive, requires retraining |
-| **Hybrid GPT-4 + Open-Source Models** | Cost-effective, balances accuracy and cost | Complex routing logic needed |
-| **Human-in-the-Loop (HITL) for Review** | Ensures fairness in ambiguous cases | Slower, SME intervention required |
+|----------------|-------------|----------------|
+| **Process Text + Images in GPT-4V Only (No Verification)** | Lower cost, faster | **Risk of missing diagrams** |
+| **Use GPT-4V + Separate LLaVA OCR for Images** | Ensures images are analyzed | **Breaks unified context, increases complexity** |
+| **Selected: GPT-4V + Image Extraction & Verification** | **Ensures no diagrams are skipped, maintains context** | **Higher cost but worth it** |
 
-### 7. Consequences
+---
 
-✅ Pros:
-- Ensures higher accuracy (96%) through multi-agent validation.
-- Explainability significantly improved via RAG-based justification.
-- Reduces grading inconsistencies through multiple verification layers.
+### **9. Consequences**
+✅ **Pros:**
+- **Ensures all diagrams are processed correctly** via separate image verification.
+- **Maintains unified context** by using GPT-4V for both text and images.
+- **Step-by-step explainability** with **CoT + Refine + Multi-Agent verification**.
+- **Higher accuracy (97%)** compared to previous approaches.
 
-⚠️ Challenges & Mitigation Strategies:
-- **Latency (1200ms per request)** → Batch processing avoids real-time performance concerns.
-- **Computational Cost (~2x inference cost increase)** → Optimized execution to parallelize grading steps.
+⚠️ **Challenges & Mitigation Strategies:**
+- **Increased Latency (~1500ms per request):** Mitigated by **batch processing and parallel execution**.
+- **Higher Cost (~3x inference cost increase vs. basic GPT-4):** Optimized via **selective multimodal calls only when needed**.
 
-### 8. Bias & Variance Considerations
-- **Bias Risk:** If the Grader sees past scores via RAG, it might drift toward an incorrect average score.
-- **Variance Awareness:** The Evaluator and Dean ensure that the Grader’s score aligns with acceptable variance levels.
-- **Correction Mechanism:** Evaluator nudges the Grader in low-variance cases (3-5 scores) while maintaining fairness in high-variance cases (1-5 scores).
+---
 
-### 9. Conclusion
-The **Multi-Agent Grading Framework with RAG and Refinement** was selected due to its modularity, high accuracy, and fairness in handling grading variance. The Evaluator acts as an independent correction mechanism, while the Dean ensures final arbitration. Future improvements could involve **adaptive retrieval, confidence-weighted scoring, or hierarchical review layers** to further refine accuracy and efficiency.
+### **10. Conclusion**
+For grading architecture case studies, we **reuse the same multi-agent orchestration framework from short-answer grading** while **adding a dedicated image verification step**. By **extracting and reprocessing images separately**, we ensure **no diagram is skipped** while maintaining **full textual context**. If **even one diagram fails**, we **escalate the case to HITL review**.
 
+This approach maximizes **accuracy, fairness, and explainability** while keeping the architecture **simple, efficient, and scalable**.
 
+**Future Work:**
+- **Confidence-based grading adjustments** for automated self-improvement.
+- **Adaptive model invocation** to optimize costs further.
