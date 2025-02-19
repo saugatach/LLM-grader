@@ -11,16 +11,6 @@ Complete API specifications are maintained in OpenAPI format under `/design/api/
 - Token format and validation rules
 - Role-based access control implementation
 
-### **1.3 Error Handling**
-- Standardized error responses
-- Error logging and monitoring
-- Retry mechanisms for transient failures
-
-### **1.4 Rate Limiting**
-- Per-endpoint limits
-- Burst allowances
-- Client identification strategy
-
 ## **2. Image Processing Implementation**
 
 ### **2.1 Image Verification Pipeline**
