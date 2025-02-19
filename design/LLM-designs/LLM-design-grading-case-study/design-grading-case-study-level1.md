@@ -96,17 +96,12 @@ flowchart TD
     C --> D{Check Confidence Level}
     
     D -->|High Confidence| E[Normal Pipeline]
-    D -->|Low Confidence| F[OCR + Rule-Based Parsing]
-    D -->|Very Low Confidence| G[LLaVA Description]
     D -->|Failed Extraction| H[HITL Escalation]
     
-    E --> I[Full Document Evaluation]
+    E --> I[Final Grading Report]
     F --> I
     G --> I
     H --> I
-    
-    I --> J[Score Aggregation]
-    J --> K[Final Grading Report]
 ```
 
 ---
