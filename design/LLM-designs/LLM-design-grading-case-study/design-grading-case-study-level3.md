@@ -1,4 +1,4 @@
-# Case Study Grading System - Level 3 Technical Design
+    # Case Study Grading System - Level 3 Technical Design
 
 ## **1. API Documentation**
 Complete API specifications are maintained in OpenAPI format under `/design/api/`:
@@ -455,7 +455,7 @@ flowchart TD
 
 #### Processing Capacity
 ```mermaid
-graph TD
+flowchart TD
     A[System Capacity] --> B[Document Processing]
     A --> C[Grading Pipeline]
     A --> D[Storage]
@@ -484,13 +484,13 @@ graph TD
 
 #### Component Failure Scenarios
 ```mermaid
-stateDiagram-v2
-    [*] --> Normal
-    Normal --> Degraded: Service Issue
-    Degraded --> Recovery: Auto-recover
-    Recovery --> Normal: Success
-    Degraded --> Manual: Auto-recovery Failed
-    Manual --> Recovery: Human Intervention
+flowchart TD
+    A[Start] --> B[Normal]
+    B --> C[Degraded: Service Issue]
+    C --> D[Recovery: Auto-recover]
+    D --> B
+    C --> E[Manual - Auto-recovery Failed]
+    E --> D[Recovery - Human Intervention]
 ```
 
 #### Recovery Strategies
@@ -538,13 +538,13 @@ AI Service:
 
 #### Failure Recovery Strategies
 ```mermaid
-stateDiagram-v2
-    [*] --> Normal
-    Normal --> Degraded: Service Issue
-    Degraded --> Recovery: Auto-recover
-    Recovery --> Normal: Success
-    Degraded --> Manual: Auto-recovery Failed
-    Manual --> Recovery: Human Intervention
+flowchart TD
+    A[Start] --> B[Normal]
+    B --> C[Degraded: Service Issue]
+    C --> D[Recovery: Auto-recover]
+    D --> B
+    C --> E[Manual: Auto-recovery Failed]
+    E --> D[Recovery: Human Intervention]
 ```
 
 #### Recovery Procedures
@@ -592,7 +592,7 @@ GradingService:
 
 #### RabbitMQ Performance
 ```mermaid
-graph TD
+flowchart TD
     subgraph Performance["Queue Performance Metrics"]
         A[Message Throughput] --> B[5000 msgs/sec]
         C[Latency] --> D[< 100ms p95]

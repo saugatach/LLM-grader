@@ -1,4 +1,4 @@
-x# Case Study Grading System - Level 2 Technical Architecture
+# Case Study Grading System - Level 2 Technical Architecture
 
 ## **1. Introduction**
 ### **1.1 Purpose**
@@ -59,7 +59,7 @@ sequenceDiagram
 
 ### **3.2 System Boundary Context**
 ```mermaid
-graph TB
+flowchart TB
     subgraph External Systems
         A[User Interface]
         B[Authentication Service]
@@ -138,7 +138,7 @@ flowchart TD
 
 ### **3.4 Component Communication Patterns**
 ```mermaid
-graph TD
+flowchart TD
     subgraph Synchronous Operations
         A[API Gateway]
         B[Submission Handler]
@@ -164,8 +164,6 @@ graph TD
         H --> I
         I --> J
     end
-
-    style Event-Driven fill:#e6e6ff,stroke:#333,stroke-width:2px
 ```
 
 ### **3.5 Interface Definitions**
@@ -411,7 +409,7 @@ flowchart TD
 ## **6. High Availability & Fault Tolerance**
 
 ```mermaid
-graph TD;
+flowchart TD;
     A[Case Study Submission] -->|Text| B[Text Grader]
     A -->|References| C[Reference Checker]
     A -->|Diagrams| D[Diagram Evaluator]
