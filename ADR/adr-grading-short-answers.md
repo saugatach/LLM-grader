@@ -36,10 +36,10 @@ The introduction of multiple agents increases token usage significantly, requiri
 
 | **Approach** | **LLM Cost (Fine-tuning & Hosting)** | **Inference Cost per Request** | **Accuracy (%)** | **Latency (ms)** | **Explainability** |
 |-------------|--------------------------------|---------------------------|--------------|--------------|----------------|
-| **Option 1: Fine-Tuned LLaMA 3 / DeepSeek MoE** | High ($10K–$50K) | ~$0.01 | 95% | 300ms | Low (No built-in justification) |
-| **Option 2: OpenAI GPT-4 Basic Few-Shot Prompting** | None | ~$0.004 | 85% | 200ms | Low (No self-verification) |
-| **Option 3: OpenAI GPT-4 + CoT + Refine + RAG** | None | ~$0.006–$0.008 | 92% | 500ms | High (Retrieves past graded responses) |
-| **Option 4: Multi-Agent Grading Framework (Grader + Evaluator + Dean)** | None | ~$0.012–$0.016 (3x LLM calls) | 96% | 1200ms | Very High (Grader + Evaluator + Dean verification) |
+| **Option 1: Fine-Tuned LLM** | High ($10K–$50K) | ~$0.01 | 95% | 300ms | Low (No built-in justification) |
+| **Option 2: Basic Prompting Technique** | None | ~$0.004 | 85% | 200ms | Low (No self-verification) |
+| **Option 3: Refine and/or Augment Technique** | None | ~$0.006–$0.008 | 92% | 500ms | High (Retrieves past graded responses) |
+| **Option 4: Multi-Agent Grading Framework** | None | ~$0.012–$0.016 (3x LLM calls) | 96% | 1200ms | Very High (Grader + Evaluator + Dean verification) |
 
 ### 5. System Architecture Considerations
 
