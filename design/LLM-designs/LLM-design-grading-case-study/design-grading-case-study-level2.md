@@ -170,22 +170,102 @@ graph TD
 
 ### **3.5 Interface Definitions**
 
-1. **External Interfaces**
-   - User Interface: REST/HTTP
-   - Authentication Service: OAuth2/OIDC
-   - Storage Service: S3-compatible API
-   - HITL Review System: Event-driven/Webhooks
+```mermaid
+graph TB
+    subgraph External["External Interfaces"]
+        UI[User Interface]
+        Auth[Authentication Service]
+        Storage[Storage Service]
+        HITL[HITL Review System]
+    end
 
-2. **Internal Component Interfaces**
-   - Processing Layer: gRPC
-   - Core Layer: Message Queue (RabbitMQ/Kafka)
-   - AI Service Integration: REST/HTTP
-   - Event Bus: Pub/Sub Pattern
+    subgraph Internal["Internal Interfaces"]
+        Process[Processing Layer]
+        Core[Core Layer]
+        AI[AI Services]
+        Events[Event Bus]
+    end
 
-3. **Communication Protocols**
-   - Synchronous: HTTP/2, gRPC
-   - Asynchronous: AMQP, Kafka Protocol
-   - Events: CloudEvents specification
+    UI -->|REST/HTTP| Process
+    Auth -->|OAuth2/OIDC| UI
+    Storage -->|S3 API| Process
+    HITL -->|Webhooks| Events
+
+    Process -->|gRPC| Core
+    Core -->|RabbitMQ/Kafka| Events
+    Core -->|REST/HTTP| AI
+    Events -->|Pub/Sub| Process
+    Events -->|Pub/Sub| HITL
+
+    style External fill:#f0f0f0,stroke:#333,stroke-width:2px
+    style Internal fill:#e6f3ff,stroke:#333,stroke-width:2px
+```
+
+#### Core System Interfaces
+
+##### Document Processing Service
+Uses gRPC because:
+- Handles large document streaming between services
+- Needs fast, efficient binary communication
+- Processes chunks of documents in parallel
+- Example: When splitting a 50MB case study PDF, we stream chunks to multiple processors
+
+##### Grading Pipeline
+Uses RabbitMQ for:
+- Document processing queue
+  - New submissions enter here
+  - Failed grades need reprocessing
+  - Priority queue for urgent grading
+- Result aggregation queue
+  - Collecting scores from different graders
+  - Merging feedback from multiple sources
+
+Example flow:
+1. Student submits case study → submission queue
+2. Document processor picks it up
+3. Processed chunks → grading queue
+4. Results → aggregation queue
+5. Final grade → notification queue
+
+##### AI Service Integration
+Uses HTTP/REST because:
+- GPT-4 API requires REST
+- Simple request/response pattern
+- Retries and rate limiting needed
+- Example: Sending text chunks for grading, getting scored responses
+
+##### Event Notifications
+Uses Kafka for:
+- Status updates (submission received, grading started, etc.)
+- Progress tracking
+- System metrics
+- Audit logging
+
+Real example: When a grade changes from "processing" to "complete", Kafka ensures all services (UI, notifications, admin dashboard) get updated.
+
+#### External Integration Points
+
+##### User Interface
+REST/HTTP for:
+- Document uploads (with progress tracking)
+- Grade retrieval
+- Status checks
+
+##### Storage
+S3 API for:
+- Raw case study storage
+- Processed results
+- Grading artifacts
+
+Example: A 20MB case study gets stored in S3, then processors access it in chunks.
+
+##### Human Review Interface
+Webhook-based for:
+- Low-confidence submissions needing review
+- Manual grade adjustments
+- Quality checks
+
+Real scenario: When GPT-4 has < 70% confidence in a grade, it triggers a human review webhook.
 
 ## **4. Execution Flow & Processing Pipelines**
 
