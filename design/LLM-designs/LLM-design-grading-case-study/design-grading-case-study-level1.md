@@ -99,8 +99,6 @@ flowchart TD
     D -->|Failed Extraction| H[HITL Escalation]
     
     E --> I[Final Grading Report]
-    F --> I
-    G --> I
     H --> I
 ```
 
