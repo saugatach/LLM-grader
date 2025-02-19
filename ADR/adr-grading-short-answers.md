@@ -63,12 +63,12 @@ The introduction of multiple agents increases token usage significantly, requiri
 
 ### 7. Consequences
 
-✅ Pros:
+ Pros:
 - Ensures higher accuracy (96%) through multi-agent validation.
 - Explainability significantly improved via RAG-based justification.
 - Reduces grading inconsistencies through multiple verification layers.
 
-⚠️ Challenges & Mitigation Strategies:
+Challenges & Mitigation Strategies:
 - **Latency (1200ms per request)** → Batch processing avoids real-time performance concerns.
 - **Computational Cost (~2x inference cost increase)** → Optimized execution to parallelize grading steps.
 

@@ -195,10 +195,10 @@ sequenceDiagram
 This architecture provides a **robust, scalable, and secure grading system** for architecture case studies. By **leveraging the multi-agent approach from short-answer grading** and **adding an image verification step**, we ensure that **all case study components—including diagrams—are accurately processed**.
 
 **Key Enhancements in This Design:**
-✅ **GPT-4V for unified text + image grading**  
-✅ **Image verification step to prevent skipped diagrams**  
-✅ **HITL escalation only when necessary**  
-✅ **Scalability through parallel batch processing**
+  * **GPT-4V for unified text + image grading**  
+  * **Image verification step to prevent skipped diagrams**  
+  * **HITL escalation only when necessary**  
+  * **Scalability through parallel batch processing**
 
 ### **Future Enhancements**
 - **Adaptive grading models** – Adjust scoring logic based on prior case study data.

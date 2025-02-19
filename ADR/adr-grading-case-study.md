@@ -101,12 +101,12 @@ While these fallback methods increase processing costs, they are still significa
 | **Human-in-the-Loop (HITL) for Review** | Ensures fairness in ambiguous cases | Slower, SME intervention required |
 
 ### 9. Consequences
-✅ **Pros:**
+**Pros:**
 - **Higher accuracy (97%)** through text + diagram evaluation.
 - **Explainability significantly improved** by separating grading responsibilities.
 - **Better handling of long responses** using hierarchical processing.
 
-⚠️ **Challenges & Mitigation Strategies:**
+**Challenges & Mitigation Strategies:**
 - **Higher latency (1500ms per request)** → Batch processing avoids real-time performance issues.
 - **Computational Cost (~3x inference cost increase)** → Optimized multimodal calls to reduce expenses.
 
