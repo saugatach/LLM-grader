@@ -115,76 +115,10 @@ flowchart TD
 
 ---
 
-## **6. High Availability & Fault Tolerance**
-
-### **6.1 Resilience Mechanisms**
-- **Redundant Pipelines:** Each grading module runs in redundant clusters to prevent single points of failure.
-- **Fallback Strategies for Diagram Processing:**
-  - **All images are extracted and reprocessed separately** to verify their evaluation.
-  - **If any diagram is not detected in the verification step, HITL is triggered**.
-
-The fallback process is illustrated below:
-
-```mermaid
-flowchart TD
-    A[Diagram Input] --> B[Full-Document Processing - GPT-4V]
-    B --> C[Extract & Verify Images]
-    C -->|Pass| D[Confirmed Evaluation]
-    C -- "Image Missing" --> E[HITL Escalation]
-    D --> F[Final Diagram Score]
-    E --> F
-```
-
-### **6.2 Scalability**
-- **Parallel Batch Processing:** Multiple submissions are processed concurrently to handle high volumes.
-- **Dynamic Resource Allocation:** Processing resources are dynamically allocated based on workload.
-
-The scalability setup is depicted below:
-
-```mermaid
-graph LR
-    A[Submission Queue] --> B[Worker Pool]
-    B --> C[Text Processor - GPT-4V]
-    B --> D[Reference Checker]
-    B --> E[Diagram Evaluator - GPT-4V]
-    C --> F[Score Aggregator]
-    D --> F
-    E --> G[Image Verification Step]
-    G -- "Fail" --> H[HITL Escalation]
-    G -- "Pass" --> F
-    F --> I[Grading Report Output]
-```
 
 ---
 
-## **7. Security & Compliance**
-
-### **7.1 Authentication & Authorization**
-- **OAuth 2.0:** Secures API endpoints.
-- **Role-Based Access Control (RBAC):** Ensures that only authorized users can access sensitive system functionalities and data.
-
-The following sequence diagram outlines secure interactions:
-
-```mermaid
-sequenceDiagram
-    participant U as User
-    participant API as API Gateway
-    participant Auth as Auth Service
-    participant Proc as Processing Pipeline
-
-    U->>API: Submit Case Study (with token)
-    API->>Auth: Validate Token (OAuth 2.0)
-    Auth-->>API: Token Validated
-    API->>Proc: Forward Submission (with RBAC context)
-```
-
-### **7.2 Compliance Considerations**
-- **Data Privacy:** The system enforces **GDPR, CCPA**, and other data protection standards through stringent access policies.
-- **Audit Logs:** Detailed logs are maintained for all grading activities to ensure **transparency and compliance**.
-
----
-
-## **8. Conclusion**
+## **6. Conclusion**
 This architecture provides a **robust, scalable, and secure grading system** for architecture case studies. By **leveraging the multi-agent approach from short-answer grading** and **adding an image verification step**, we ensure that **all case study components—including diagrams—are accurately processed**.
 
 **Key Enhancements in This Design:**
