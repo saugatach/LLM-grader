@@ -548,3 +548,60 @@ GradingService:
     idle_time: 10min
     queue_depth: 50
 ```
+
+### Message Broker Performance Metrics
+
+#### RabbitMQ Performance
+```mermaid
+graph TD
+    subgraph Performance["Queue Performance Metrics"]
+        A[Message Throughput] --> B[5000 msgs/sec]
+        C[Latency] --> D[< 100ms p95]
+        E[Queue Depth] --> F[Max 10000]
+        G[Processing Time] --> H[< 200ms p95]
+    end
+```
+
+| Metric | Target | Alert Threshold | Critical Threshold |
+|--------|--------|----------------|-------------------|
+| Queue Latency | < 100ms | > 200ms | > 500ms |
+| Message Rate | 5000/sec | < 3000/sec | < 1000/sec |
+| Dead Letter Rate | < 0.1% | > 0.5% | > 1% |
+| Consumer Lag | < 100 | > 500 | > 1000 |
+
+#### Kafka Performance
+| Metric | Target | Alert Threshold | Critical Threshold |
+|--------|--------|----------------|-------------------|
+| Producer Latency | < 10ms | > 50ms | > 100ms |
+| Consumer Lag | < 1000 msgs | > 5000 msgs | > 10000 msgs |
+| Topic Throughput | 10000/sec | < 7000/sec | < 3000/sec |
+| Replication Lag | < 100ms | > 500ms | > 1000ms |
+
+#### Redis Cache Performance
+| Metric | Target | Alert Threshold | Critical Threshold |
+|--------|--------|----------------|-------------------|
+| Response Time | < 10ms | > 50ms | > 100ms |
+| Hit Rate | > 80% | < 60% | < 40% |
+| Memory Usage | < 70% | > 80% | > 90% |
+| Eviction Rate | < 100/sec | > 500/sec | > 1000/sec |
+
+#### System-wide Message Processing
+```yaml
+Processing:
+  grading_queue:
+    peak_throughput: "5000/second"
+    average_latency: "< 100ms"
+    error_rate: "< 0.1%"
+    recovery_time: "< 30s"
+
+  event_streaming:
+    throughput: "10000/second"
+    end_to_end_latency: "< 500ms"
+    data_loss: "zero"
+    partition_count: 10
+
+  caching:
+    hit_ratio: "> 80%"
+    eviction_rate: "< 100/second"
+    replication_lag: "< 50ms"
+```
