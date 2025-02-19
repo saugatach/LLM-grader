@@ -71,16 +71,43 @@ graph TD
 
 ### **4.1 Grading Workflow**
 1. **Submission:** A user submits a case study document.
-2. **Text Processing:** The document’s text is analyzed for quality using **GPT-4V**.
+2. **Text Processing:** 
+   - Document is chunked using hierarchical summarization
+   - Each section is analyzed using GPT-4V with CoT + Refine
 3. **Reference Validation:** The Reference Checker verifies citation accuracy using retrieval-based methods.
 4. **Diagram Analysis:**  
-   - **Primary Evaluation:** The **full case study (text + diagrams)** is processed in **GPT-4V**.
-   - **Image Verification Loop:**  
-     - Extract all diagrams and **reprocess them separately** through **GPT-4V**.
-     - Compare detected images from the **full-document evaluation** to the **separately processed images**.
-     - **If any image is missing**, escalate to **HITL**.
-5. **Score Aggregation:** The Final Aggregator integrates scores, applies weighting, and normalizes the results.
-6. **Feedback Generation:** A detailed grading report is compiled and delivered to the user.
+   - **Initial Image Verification:**
+     - Extract all images from document
+     - Process each image through GPT-4V
+     - Generate confidence score for each image
+   - **Confidence-Based Processing Path:**
+     - High confidence → Continue with normal pipeline
+     - Low confidence → OCR + Rule-Based Parsing
+     - Very low confidence → LLaVA-generated description
+     - Failed extraction → HITL escalation
+   - **Full Document Evaluation:** Process complete case study with verified images
+5. **Score Aggregation:** Final Aggregator integrates scores with confidence weighting
+6. **Feedback Generation:** Detailed grading report compiled
+
+```mermaid
+flowchart TD
+    A[Case Study Submission] --> B[Extract Images]
+    B --> C[Initial Image Verification]
+    C --> D{Check Confidence Level}
+    
+    D -->|High Confidence| E[Normal Pipeline]
+    D -->|Low Confidence| F[OCR + Rule-Based Parsing]
+    D -->|Very Low Confidence| G[LLaVA Description]
+    D -->|Failed Extraction| H[HITL Escalation]
+    
+    E --> I[Full Document Evaluation]
+    F --> I
+    G --> I
+    H --> I
+    
+    I --> J[Score Aggregation]
+    J --> K[Final Grading Report]
+```
 
 ---
 
