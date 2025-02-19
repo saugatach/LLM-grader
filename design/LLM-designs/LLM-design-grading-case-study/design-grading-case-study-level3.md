@@ -351,7 +351,46 @@ Upload:
   max_concurrency: 10
 ```
 
-### **4.2 Human Review Interface**
+### **4.2 Data Lifecycle Management**
+
+```mermaid
+graph TD
+    subgraph "Paper Lifecycle"
+        A[New Paper] --> B[Hot Storage]
+        B --> |After Semester| C[Cool Storage]
+        C --> |After 1 Year| D[Cold Storage]
+        D --> |After 5 Years| E[Delete]
+    end
+
+    subgraph "Grade Records"
+        F[New Grade] --> G[Hot Storage]
+        G --> |After Semester| H[Cool Storage]
+        H --> |"Retain (5 years)"| I[Archive]
+    end
+
+    subgraph "System Logs"
+        J[New Log] --> K[Hot Storage]
+        K --> |After 1 Week| L[Cool Storage]
+        L --> |After 3 Months| M[Delete]
+    end
+```
+
+#### Lifecycle Rules Configuration
+
+| Data Type | Storage Tier | Duration | Trigger | Approval |
+|-----------|--------------|-----------|----------|-----------|
+| Papers | Hot Storage | 6 months | Semester End | Automatic |
+| Papers | Cool Storage | 1 year | Age | Automatic |
+| Papers | Cold Storage | 5 years | Age | Automatic |
+| Papers | Deletion | - | Age > 5 years | Automatic |
+| Grades | Hot Storage | 6 months | Semester End | Automatic |
+| Grades | Cool Storage | 5 years | Age | Automatic |
+| Grades | Archive | Indefinite | Retention Policy | Manual |
+| System Logs | Hot Storage | 1 week | Age | Automatic |
+| System Logs | Cool Storage | 3 months | Age | Automatic |
+| System Logs | Deletion | - | Age > 3 months | Automatic |
+
+### **4.3 Human Review Interface**
 ```mermaid
 flowchart TD
     subgraph Triggers
@@ -391,7 +430,7 @@ Triggers:
   deviation_threshold: 0.20  # 20% from mean
 ```
 
-### **4.3 External UI**
+### **4.4 External UI**
 ```mermaid
 flowchart TD
     subgraph Client["Client Layer"]
