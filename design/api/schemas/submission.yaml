@@ -1,0 +1,32 @@
+SubmissionRequest:
+  type: object
+  properties:
+    document:
+      type: string
+      format: binary
+      description: Case study document
+    metadata:
+      type: object
+      required:
+        - studentId
+        - submissionType
+      properties:
+        studentId:
+          type: string
+        submissionType:
+          type: string
+          enum: [INITIAL, REVISION]
+
+SubmissionResponse:
+  type: object
+  properties:
+    submissionId:
+      type: string
+    status:
+      type: string
+      enum: [PENDING, PROCESSING, COMPLETED, FAILED]
+
+SubmissionList:
+  type: array
+  items:
+    $ref: '#/SubmissionResponse' 

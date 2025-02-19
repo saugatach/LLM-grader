@@ -1,0 +1,42 @@
+Error:
+  type: object
+  properties:
+    code:
+      type: string
+    message:
+      type: string
+    details:
+      type: object
+    traceId:
+      type: string
+  required:
+    - code
+    - message
+
+BadRequest:
+  description: Invalid request
+  content:
+    application/json:
+      schema:
+        $ref: '#/Error'
+
+NotFound:
+  description: Resource not found
+  content:
+    application/json:
+      schema:
+        $ref: '#/Error'
+
+PayloadTooLarge:
+  description: File size exceeds limit
+  content:
+    application/json:
+      schema:
+        $ref: '#/Error'
+
+InternalError:
+  description: Internal server error
+  content:
+    application/json:
+      schema:
+        $ref: '#/Error' 

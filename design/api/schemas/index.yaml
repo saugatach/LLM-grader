@@ -1,0 +1,6 @@
+Submission:
+  $ref: './submission.yaml#/Submission'
+Grading:
+  $ref: './grading.yaml#/Grading'
+Error:
+  $ref: './errors.yaml#/Error' 

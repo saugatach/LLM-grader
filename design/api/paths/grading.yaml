@@ -1,0 +1,28 @@
+grading:
+  post:
+    summary: Start grading process
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/grading.yaml#/GradingRequest'
+    responses:
+      '202':
+        $ref: '../schemas/grading.yaml#/GradingResponse'
+      '404':
+        $ref: '../schemas/errors.yaml#/NotFound'
+      '500':
+        $ref: '../schemas/errors.yaml#/InternalError'
+
+  get:
+    summary: Get grading results
+    parameters:
+      - name: submissionId
+        in: query
+        required: true
+        schema:
+          type: string
+    responses:
+      '200':
+        $ref: '../schemas/grading.yaml#/GradingResult' 

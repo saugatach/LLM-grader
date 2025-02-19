@@ -1,0 +1,6 @@
+/submissions:
+  $ref: './submissions.yaml#/submissions'
+/grading:
+  $ref: './grading.yaml#/grading'
+/images:
+  $ref: './images.yaml#/images' 

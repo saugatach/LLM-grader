@@ -1,0 +1,11 @@
+images:
+  post:
+    summary: Process submission images
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/images.yaml#/ImageProcessingRequest'
+    responses:
+      '200':
+        $ref: '../schemas/images.yaml#/ImageProcessingResponse' 

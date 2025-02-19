@@ -1,0 +1,39 @@
+submissions:
+  post:
+    summary: Submit a new case study for grading
+    description: |
+      Accepts a case study document and metadata for grading evaluation.
+      Supports PDF and DOCX formats.
+    tags:
+      - Submissions
+    requestBody:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            $ref: '../schemas/submission.yaml#/SubmissionRequest'
+    responses:
+      '201':
+        $ref: '../schemas/submission.yaml#/SubmissionResponse'
+      '400':
+        $ref: '../schemas/errors.yaml#/BadRequest'
+      '413':
+        $ref: '../schemas/errors.yaml#/PayloadTooLarge'
+      '500':
+        $ref: '../schemas/errors.yaml#/InternalError'
+
+  get:
+    summary: List submissions
+    parameters:
+      - name: studentId
+        in: query
+        schema:
+          type: string
+      - name: status
+        in: query
+        schema:
+          type: string
+          enum: [PENDING, PROCESSING, COMPLETED, FAILED]
+    responses:
+      '200':
+        $ref: '../schemas/submission.yaml#/SubmissionList' 

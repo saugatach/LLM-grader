@@ -1,0 +1,36 @@
+GradingRequest:
+  type: object
+  properties:
+    submissionId:
+      type: string
+    gradingType:
+      type: string
+      enum: [AUTOMATIC, MANUAL]
+
+GradingResponse:
+  type: object
+  properties:
+    gradingId:
+      type: string
+    status:
+      type: string
+      enum: [IN_PROGRESS, COMPLETED]
+
+GradingResult:
+  type: object
+  properties:
+    overallScore:
+      type: number
+    componentScores:
+      type: object
+      properties:
+        text:
+          type: number
+        diagrams:
+          type: number
+        references:
+          type: number
+    feedback:
+      type: array
+      items:
+        type: string 

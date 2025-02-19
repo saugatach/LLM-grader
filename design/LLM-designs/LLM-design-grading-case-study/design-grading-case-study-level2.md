@@ -1,4 +1,4 @@
-# Case Study Grading System - Level 2 Technical Architecture
+x# Case Study Grading System - Level 2 Technical Architecture
 
 ## **1. Introduction**
 ### **1.1 Purpose**
@@ -24,8 +24,9 @@ This architecture assumes a **single model approach using GPT-4** for all gradin
 
 ---
 
-## **3. Detailed Logical Architecture**
+## **3. System Interaction Patterns**
 
+### **3.1 Component Interaction Sequence**
 ```mermaid
 sequenceDiagram
     participant User
@@ -39,35 +40,279 @@ sequenceDiagram
 
     User->>SubmissionHandler: Upload Case Study (Text + References + Diagrams)
     SubmissionHandler->>Orchestrator: Validate & Initiate Processing
-    Orchestrator->>TextProcessor: Extract and Evaluate Text Sections
-    Orchestrator->>ReferenceValidator: Verify Citations and References
-    Orchestrator->>DiagramProcessor: Analyze and Score Diagrams
-    TextProcessor->>ScoringAggregator: Return Evaluated Text Scores
-    ReferenceValidator->>ScoringAggregator: Return Reference Validation Scores
-    DiagramProcessor->>ScoringAggregator: Return Diagram Scores
+    
+    par Process Text
+        Orchestrator->>TextProcessor: Extract and Evaluate Text Sections
+    and Process References
+        Orchestrator->>ReferenceValidator: Verify Citations and References
+    and Process Diagrams
+        Orchestrator->>DiagramProcessor: Analyze and Score Diagrams
+    end
+
+    TextProcessor-->>ScoringAggregator: Return Evaluated Text Scores
+    ReferenceValidator-->>ScoringAggregator: Return Reference Validation Scores
+    DiagramProcessor-->>ScoringAggregator: Return Diagram Scores
+    
     ScoringAggregator->>FeedbackGenerator: Generate Feedback Report
     FeedbackGenerator->>User: Provide Grading Report
 ```
 
----
+### **3.2 System Boundary Context**
+```mermaid
+graph TB
+    subgraph External Systems
+        A[User Interface]
+        B[Authentication Service]
+        C[Storage Service]
+    end
+
+    subgraph Grading System
+        subgraph Processing Layer
+            D[Submission Handler]
+            E[Text Processor]
+            F[Reference Validator]
+            G[Diagram Processor]
+        end
+        
+        subgraph Core Layer
+            H[Workflow Orchestrator]
+            I[Scoring Aggregator]
+        end
+        
+        subgraph AI Layer
+            J[GPT-4V Service]
+            K[LLaVA Service]
+            L[OCR Service]
+        end
+    end
+
+    subgraph External Services
+        M[HITL Review System]
+        N[Monitoring System]
+    end
+
+    A --> D
+    D --> H
+    H --> E & F & G
+    E & F & G --> I
+    E & G --> J
+    G --> K
+    G --> L
+    G --> M
+```
+
+### **3.3 Data Flow Patterns**
+```mermaid
+flowchart TD
+    subgraph Input
+        A[Case Study Document] --> B[Document Parser]
+        B --> C[Content Extractor]
+    end
+
+    subgraph Processing
+        C --> D[Text Content]
+        C --> E[References]
+        C --> F[Diagrams]
+        
+        D --> G[Text Analysis]
+        E --> H[Reference Validation]
+        F --> I[Image Processing]
+        
+        G --> J[Text Scores]
+        H --> K[Reference Scores]
+        I --> L[Diagram Scores]
+    end
+
+    subgraph Aggregation
+        J --> M[Score Aggregator]
+        K --> M
+        L --> M
+        M --> N[Final Score]
+    end
+
+    subgraph Output
+        N --> O[Feedback Generator]
+        O --> P[Grading Report]
+    end
+```
+
+### **3.4 Component Communication Patterns**
+```mermaid
+graph TD
+    subgraph Synchronous Operations
+        A[API Gateway]
+        B[Submission Handler]
+        C[Workflow Orchestrator]
+        A --> B
+        B --> C
+    end
+
+    subgraph Asynchronous Operations
+        D[Message Queue]
+        E[Text Processor]
+        F[Reference Validator]
+        G[Diagram Processor]
+        C --> D
+        D --> E & F & G
+    end
+
+    subgraph Event-Driven
+        H[Event Bus]
+        I[Score Aggregator]
+        J[Feedback Generator]
+        E & F & G --> H
+        H --> I
+        I --> J
+    end
+
+    style Event-Driven fill:#e6e6ff,stroke:#333,stroke-width:2px
+```
+
+### **3.5 Interface Definitions**
+
+1. **External Interfaces**
+   - User Interface: REST/HTTP
+   - Authentication Service: OAuth2/OIDC
+   - Storage Service: S3-compatible API
+   - HITL Review System: Event-driven/Webhooks
+
+2. **Internal Component Interfaces**
+   - Processing Layer: gRPC
+   - Core Layer: Message Queue (RabbitMQ/Kafka)
+   - AI Service Integration: REST/HTTP
+   - Event Bus: Pub/Sub Pattern
+
+3. **Communication Protocols**
+   - Synchronous: HTTP/2, gRPC
+   - Asynchronous: AMQP, Kafka Protocol
+   - Events: CloudEvents specification
 
 ## **4. Execution Flow & Processing Pipelines**
 
 ### **4.1 Grading Pipeline**
+```mermaid
+sequenceDiagram
+    participant S as Submission Service
+    participant O as Orchestrator
+    participant T as Text Processor
+    participant R as Reference Checker
+    participant D as Diagram Processor
+    participant A as Score Aggregator
+    participant F as Feedback Generator
+
+    S->>O: Submit Case Study
+    activate O
+    O->>O: Validate & Extract Components
+    
+    par Text Processing
+        O->>T: Process Text Sections
+        activate T
+        T-->>O: Text Evaluation Complete
+        deactivate T
+    and Reference Processing
+        O->>R: Validate References
+        activate R
+        R-->>O: Reference Check Complete
+        deactivate R
+    and Diagram Processing
+        O->>D: Process Diagrams
+        activate D
+        D->>D: Image Verification
+        D->>D: Confidence Check
+        alt High Confidence
+            D->>D: Direct GPT-4V Analysis
+        else Medium Confidence
+            D->>D: OCR + Rule Processing
+        else Low Confidence
+            D->>D: LLaVA Description
+        end
+        D-->>O: Diagram Analysis Complete
+        deactivate D
+    end
+
+    O->>A: All Components Processed
+    deactivate O
+    activate A
+    A->>F: Generate Report
+    deactivate A
+    activate F
+    F-->>S: Return Grading Report
+    deactivate F
+```
+
+### **4.2 Image Verification Pipeline**
+```mermaid
+flowchart TD
+    A[Case Study Submission] --> B[Image Extraction Service]
+    B --> |Extract Images| C[Metadata Analysis]
+    
+    subgraph Metadata["Metadata Processing"]
+        C --> |Check| D[Format Validation]
+        C --> |Analyze| E[Resolution Check]
+        C --> |Verify| F[Size Constraints]
+    end
+    
+    Metadata --> G[Initial GPT-4V Analysis]
+    G --> H{Confidence Score Assessment}
+    
+    H -->|Score > 0.85| I[High Confidence Path]
+    H -->|0.60-0.85| J[Medium Confidence Path]
+    H -->|0.30-0.60| K[Low Confidence Path]
+    H -->|< 0.30| L[Very Low Confidence Path]
+    
+    subgraph HighConf["Direct Processing"]
+        I --> I1[GPT-4V Analysis]
+        I1 --> I2[Architecture Validation]
+        I2 --> I3[Generate Score]
+    end
+    
+    subgraph MedConf["OCR Processing"]
+        J --> J1[OCR Text Extraction]
+        J1 --> J2[Rule-Based Parsing]
+        J2 --> J3[Generate Score]
+    end
+    
+    subgraph LowConf["LLaVA Processing"]
+        K --> K1[Generate Description]
+        K1 --> K2[Text Analysis]
+        K2 --> K3[Generate Score]
+    end
+    
+    subgraph VLowConf["HITL Escalation"]
+        L --> L1[Queue for Review]
+        L1 --> L2[Expert Review]
+        L2 --> L3[Manual Score]
+    end
+    
+    HighConf & MedConf & LowConf & VLowConf --> M[Score Aggregation]
+    M --> N[Final Evaluation]
+    
+    style HighConf fill:#e6ffe6,stroke:#333,stroke-width:2px
+    style MedConf fill:#fff5e6,stroke:#333,stroke-width:2px
+    style LowConf fill:#ffe6e6,stroke:#333,stroke-width:2px
+    style VLowConf fill:#e6e6ff,stroke:#333,stroke-width:2px
+    style Metadata fill:#f0f0f0,stroke:#333,stroke-width:2px
+```
+
+### **4.3 Processing Steps**
 1. **Document Submission & Preprocessing**
-   - Extract text, references, and diagrams.
-   - Validate submission format and structure.
+   - Extract text, references, and diagrams
+   - Validate submission format and structure
 2. **Text Processing & Evaluation**
-   - Use **GPT-4** to analyze sections based on rubrics.
-   - Apply **CoT + Refine** to improve accuracy.
+   - Use GPT-4 to analyze sections based on rubrics
+   - Apply CoT + Refine to improve accuracy
 3. **Reference Checking**
-   - Retrieve cited references and compare them to case study content.
+   - Retrieve cited references
+   - Compare with case study content
 4. **Diagram Evaluation**
-   - Process images using **GPT-4V** for multimodal assessment.
+   - Process images using GPT-4V
+   - Apply confidence-based routing
 5. **Score Aggregation**
-   - Normalize and combine scores from different modules.
+   - Normalize scores from different modules
+   - Apply section weightings
 6. **Feedback Generation**
-   - Structure justifications and provide actionable feedback.
+   - Structure justifications
+   - Provide actionable feedback
 
 ---
 

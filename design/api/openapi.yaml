@@ -1,0 +1,31 @@
+openapi: 3.0.0
+info:
+  title: Case Study Grading System API
+  version: 1.0.0
+  description: |
+    API for submitting and grading case study assignments.
+    Handles document submissions, grading, and feedback generation.
+  contact:
+    name: Certificate Inc Engineering
+    email: engineering@certificateinc.com
+
+servers:
+  - url: https://grading.certificateinc.com/v1
+    description: Production server
+  - url: https://stage.grading.certificateinc.com/v1
+    description: Staging server
+
+security:
+  - bearerAuth: []
+
+paths:
+  $ref: './paths/index.yaml'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    $ref: './schemas/index.yaml' 
