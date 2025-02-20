@@ -70,7 +70,7 @@ graph LR;
 [//]: # (    D --Yes--> E[Finalize Score & Feedback])
 [//]: # (    D --No--> F[Send Back for Regrading])
 [//]: # (    F -->|Pass Feedback to| B)
-```
+[//]: # (```)
 
 ### **2.5 Storage & Reporting Module**
 - **Database Management:**
