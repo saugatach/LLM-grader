@@ -46,7 +46,7 @@ graph LR;
 [//]: # (    end)
 [//]: # (    B -->|Evaluate with RAG| E)
 [//]: # (    B -->|Return Feedback & Confidence| A)
-```
+[//]: ```
 
 ### **2.4 Dean Agent**
 - **Primary Function:** **Orchestrates the grading pipeline**, ensuring iterative feedback loops for accuracy.
