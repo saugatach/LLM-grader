@@ -36,25 +36,9 @@ The **Technical Architecture Diagram** highlights **technical platforms, framewo
 - Highlight **service interactions**
 - Keep it **high-level** while ensuring clarity
 
-```mermaid
 
-graph LR;
-    subgraph Input_Processing
-        A[Candidate Response] -->|Validated| B[Tokenizer]
-        B --> C[Preprocessing Engine]
-    end
+![shortanswer-detaileddesign](../../../img/shortanswer-detaileddesign.png)
 
-    subgraph Grading_Agents
-        C --> D[Grader Agent]
-        D --> E[Evaluator Agent]
-        E --> F[Dean Agent]
-    end
-
-    subgraph Storage_Reporting
-        F --> J[Score Database]
-        J --> K[Candidate Reports]
-    end
-```
 
 ## **5. Scalability & Performance Considerations**
 - **Batch Processing** for concurrent grading.

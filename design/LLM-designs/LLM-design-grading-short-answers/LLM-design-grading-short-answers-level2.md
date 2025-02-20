@@ -35,15 +35,17 @@ graph LR;
   3. Runs **retrieval and semantic similarity matching** inside a **RAG Pipeline**.
   4. Returns **feedback and confidence level** back to the Dean Agent.
 
-```mermaid
-graph LR;
-    A[Dean Agent] -->|Send Q/A Score| B[Evaluator Agent]
-    subgraph RAG Pipeline
-        C[Vector Store] -->|Retrieve Relevant Context| D[Retrieval Node]
-        D -->|Semantic Similarity Matching| E[Scoring Node]
-    end
-    B -->|Evaluate with RAG| E
-    B -->|Return Feedback & Confidence| A
+![evaluatoragent](../../../img/evaluator-agent.png)
+
+ [//]: # (```mermaid)
+[//]: # (graph LR;)
+[//]: # (    A[Dean Agent] -->|Send Q/A Score| B[Evaluator Agent])
+[//]: # (    subgraph RAG Pipeline)
+[//]: # (        C[Vector Store] -->|Retrieve Relevant Context| D[Retrieval Node])
+[//]: # (        D -->|Semantic Similarity Matching| E[Scoring Node])
+[//]: # (    end)
+[//]: # (    B -->|Evaluate with RAG| E)
+[//]: # (    B -->|Return Feedback & Confidence| A)
 ```
 
 ### **2.4 Dean Agent**
@@ -55,16 +57,19 @@ graph LR;
   4. If **confidence level is low**, re-routes response back to the Grader Agent for refinement.
   5. If **confidence is sufficient**, finalizes the score and feedback.
 
-```mermaid
-graph TD;
-    A[Dean Agent] -->|Send Q/A to Grader| B[Grader Agent]
-    B -->|Return Score| A
-    A -->|Send to Evaluator| C[Evaluator Agent]
-    C -->|Return Feedback & Confidence| A
-    A -->|Check Confidence| D{Confidence > Threshold?}
-    D --Yes--> E[Finalize Score & Feedback]
-    D --No--> F[Send Back for Regrading]
-    F -->|Pass Feedback to| B
+![deanagent](../../../img/DeanAgent-Flow.png)
+
+[//]: # (```mermaid)
+
+[//]: # (graph TD;)
+[//]: # (    A[Dean Agent] -->|Send Q/A to Grader| B[Grader Agent])
+[//]: # (    B -->|Return Score| A)
+[//]: # (    A -->|Send to Evaluator| C[Evaluator Agent])
+[//]: # (    C -->|Return Feedback & Confidence| A)
+[//]: # (    A -->|Check Confidence| D{Confidence > Threshold?})
+[//]: # (    D --Yes--> E[Finalize Score & Feedback])
+[//]: # (    D --No--> F[Send Back for Regrading])
+[//]: # (    F -->|Pass Feedback to| B)
 ```
 
 ### **2.5 Storage & Reporting Module**
